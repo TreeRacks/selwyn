@@ -1,2 +1,2 @@
 # selwyn
-For our deaf friend.
+Accessibility project for gamers with hearing disabilities. 
