@@ -9,7 +9,7 @@ time.sleep(1)
 subprocess.run(["i2cset", "-y", "1", "0x70", "0x21", "0x00"])
 time.sleep(1)
 subprocess.run(["i2cset", "-y", "1", "0x70", "0x80","0x00"])
-
+subprocess.run(["i2cset", "-y", "1", "0x70", "0x81","0x00"])
 while True:
 
     subprocess.run(["i2cset", "-y", "1", "0x70", "0x06", "0xFF"])
