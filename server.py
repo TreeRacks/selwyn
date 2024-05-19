@@ -40,7 +40,6 @@ def audio_stream():
     data = None
     while True:
         data = s.read(CHUNK)
-        print(data)
         server_socket.sendto(data, addr)
                 
 t1 = threading.Thread(target=audio_stream, args=())

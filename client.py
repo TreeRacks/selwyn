@@ -4,6 +4,9 @@
 import socket
 import threading, wave, pyaudio, time, queue
 import numpy as np
+from led import initMatrix, animateFrame
+
+initMatrix()
 
 host_name = socket.gethostname()
 host_ip = '192.168.4.1'#  socket.gethostbyname(host_name)
@@ -39,6 +42,11 @@ def audio_stream_UDP():
 	time.sleep(5)
 	print('Now Playing...')
 	print("")
+
+	ralen = 5
+
+	ral = [0] * ralen
+	rar = [0] * ralen
 	
 	while True:
 		frame = q.get()
@@ -46,9 +54,23 @@ def audio_stream_UDP():
 		left_ch = data[0::2]
 		right_ch = data[1::2]
 		
-		left_vol = 10 * np.log10(np.vdot(left_ch, left_ch) / len(left_ch))
-		right_vol = 10 * np.log10(np.vdot(right_ch, right_ch) / len(right_ch))
+		coeff = 10
+		
+		def getVol(ch):
+			return coeff * np.log10(np.vdot(ch, ch) / len(ch))
+		left_vol =  getVol(left_ch)
+		right_vol = getVol(right_ch)
+		
+		ral.pop(0)
+		ral.append(left_vol)
 
+		rar.pop(0)
+		rar.append(right_vol)
+
+		lva = np.sum(ral) / ralen
+		rva = np.sum(rar) / ralen
+
+		animateFrame(lva, rva)
 		# total_vol = left_vol + right_vol
 
 		# lvp = left_vol/total_vol
