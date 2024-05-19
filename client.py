@@ -3,6 +3,7 @@
 
 import socket
 import threading, wave, pyaudio, time, queue
+import numpy as np
 
 host_name = socket.gethostname()
 host_ip = '192.168.4.1'#  socket.gethostbyname(host_name)
@@ -15,32 +16,49 @@ def audio_stream_UDP():
 	BUFF_SIZE = 65536
 	client_socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 	client_socket.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,BUFF_SIZE)
-	p = pyaudio.PyAudio()
+	# p = pyaudio.PyAudio()
 	CHUNK = 10*1024
-	stream = p.open(format=p.get_format_from_width(2),
-					channels=2,
-					rate=44100,
-					output=True,
-					frames_per_buffer=CHUNK)
+	# stream = p.open(format=p.get_format_from_width(2),
+	# 				channels=2,
+	# 				rate=44100,
+	# 				output=True,
+	# 				frames_per_buffer=CHUNK)
 					
 	# create socket
 	message = b'Hello'
+	client_socket.settimeout(5)
 	client_socket.sendto(message,(host_ip,port))
 	socket_address = (host_ip,port)
-	
 	def getAudioData():
 		while True:
 			frame,_= client_socket.recvfrom(BUFF_SIZE)
 			q.put(frame)
-			print('Queue size...',q.qsize())
+			print(f"Queue size: {q.qsize()}")
 	t1 = threading.Thread(target=getAudioData, args=())
 	t1.start()
 	time.sleep(5)
 	print('Now Playing...')
+	print("")
+	
 	while True:
 		frame = q.get()
-		print(frame)
-		stream.write(frame)
+		data = np.fromstring(frame, dtype=np.uint16)
+		left_ch = data[0::2]
+		right_ch = data[1::2]
+		
+		left_vol = 10 * np.log10(np.vdot(left_ch, left_ch) / len(left_ch))
+		right_vol = 10 * np.log10(np.vdot(right_ch, right_ch) / len(right_ch))
+
+		# total_vol = left_vol + right_vol
+
+		# lvp = left_vol/total_vol
+		# rvp = right_vol/total_vol
+
+		# bvp = (rvp - lvp) * 100
+		print(f"{left_vol:.2f}, {right_vol:.2f}")
+		# print(f"{lvp:.2f}, {rvp:.2f}")
+		# print(f"{bvp:.2f}", end="\r")
+		# stream.write(frame)
 
 	client_socket.close()
 	print('Audio closed')
