@@ -4,9 +4,9 @@ import socket
 import threading, wave, pyaudio,pickle,struct
 
 host_name = socket.gethostname()
-host_ip = '192.168.4.2'#  socket.gethostbyname(host_name)
+host_ip = '192.168.4.1'#  socket.gethostbyname(host_name)
 print(host_ip)
-port = 9611
+port = 9633
 
 CHUNK = 1024 * 2             # samples per frame
 FORMAT = pyaudio.paInt16     # audio format (bytes per sample?)
@@ -14,12 +14,12 @@ CHANNELS = 2                # single channel for microphone
 RATE = 44100  
 
 def audio_stream():
-    server_socket = socket.socket()
-    server_socket.bind((host_ip, (port-1)))
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_socket.bind((host_ip, port))
 
-    server_socket.listen(5)
+    # server_socket.listen(5)
     p = pyaudio.PyAudio()
-    print('server listening at',(host_ip, (port-1)))
+    print('server listening at',(host_ip, (port)))
    
     
     s = p.open(
@@ -35,17 +35,15 @@ def audio_stream():
 
              
 
-    client_socket,addr = server_socket.accept()
+    message,addr = server_socket.recvfrom(1024)
  
     data = None
     while True:
-        if client_socket:
-            while True:
-              
-                data = s.readframes(CHUNK)
-                a = pickle.dumps(data)
-                message = struct.pack("Q",len(a))+a
-                client_socket.sendall(message)
+        data = s.read(CHUNK)
+        print(data)
+        a = pickle.dumps(data)
+        message = struct.pack("Q",len(a))+a
+        server_socket.sendto(message, addr)
                 
 t1 = threading.Thread(target=audio_stream, args=())
 t1.start()

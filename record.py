@@ -12,7 +12,7 @@ CHANNELS = 2
 RATE = 44100
 RECORD_SECONDS = 5
 
-with wave.open('fuck.wav', 'wb') as wf:
+with wave.open('rightbowie.wav', 'wb') as wf:
     p = pyaudio.PyAudio()
     wf.setnchannels(1)
     wf.setsampwidth(p.get_sample_size(FORMAT))
@@ -33,7 +33,7 @@ with wave.open('fuck.wav', 'wb') as wf:
         sdata = stream.read(CHUNK)
         data = np.fromstring(sdata, dtype=np.uint16)
         print(data.shape)
-        ch_data = data[1::4]
+        ch_data = data[1::2]
         wf.writeframes(ch_data.tostring())
     print('Done')
 
