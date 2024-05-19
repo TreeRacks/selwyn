@@ -41,9 +41,7 @@ def audio_stream():
     while True:
         data = s.read(CHUNK)
         print(data)
-        a = pickle.dumps(data)
-        message = struct.pack("Q",len(a))+a
-        server_socket.sendto(message, addr)
+        server_socket.sendto(data, addr)
                 
 t1 = threading.Thread(target=audio_stream, args=())
 t1.start()
